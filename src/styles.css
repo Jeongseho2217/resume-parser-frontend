@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+  color: #0f172a;
+  font-family: "Pretendard Variable", "Pretendard", "SUIT Variable", sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(96, 165, 250, 0.16), transparent 32%),
+    radial-gradient(circle at top right, rgba(56, 189, 248, 0.12), transparent 26%),
+    #f8fafc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+.applicant-detail-enter-next {
+  animation: applicant-detail-enter-next 220ms ease-out;
+}
+
+.applicant-detail-enter-prev {
+  animation: applicant-detail-enter-prev 220ms ease-out;
+}
+
+.applicant-detail-fade {
+  animation: applicant-detail-fade 180ms ease-out;
+}
+
+.applicant-side-skeleton {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(248, 250, 252, 0.8)),
+    linear-gradient(90deg, rgba(226, 232, 240, 0.25), rgba(255, 255, 255, 0.7), rgba(226, 232, 240, 0.25));
+  overflow: hidden;
+  position: relative;
+}
+
+.applicant-side-skeleton::after {
+  animation: applicant-skeleton-shimmer 1.5s linear infinite;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.55) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  content: "";
+  inset: 0;
+  position: absolute;
+  transform: translateX(-100%);
+}
+
+.skeleton-bar {
+  background: linear-gradient(90deg, rgba(226, 232, 240, 0.9), rgba(241, 245, 249, 0.95));
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes applicant-detail-enter-next {
+  from {
+    opacity: 0;
+    transform: translateX(18px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes applicant-detail-enter-prev {
+  from {
+    opacity: 0;
+    transform: translateX(-18px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes applicant-detail-fade {
+  from {
+    opacity: 0;
+    transform: scale(0.99);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes applicant-skeleton-shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(100%);
+  }
+}
