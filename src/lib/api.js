@@ -63,7 +63,7 @@ function toDetailItem(baseCandidate, payload) {
     status: "DONE",
     analysisResult: {
       ...baseCandidate,
-      candidateDate: payload.candidate_date || "",
+      candidateDate: payload.applied_at || "",
       matchingScore: result.matching_score ?? baseCandidate.matchingScore ?? 0,
       technicalSkills,
       coreCompetencies,
@@ -74,20 +74,70 @@ function toDetailItem(baseCandidate, payload) {
   };
 }
 
-async function request(path) {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+async function request(path, options = {}) {
+  const { method = "GET", body } = options;
+
+  const headers = { "Content-Type": "application/json" };
+
+  const fetchOptions = { method, headers };
+  if (body !== undefined) {
+    fetchOptions.body = JSON.stringify(body);
+  }
+
+  const response = await fetch(`${API_BASE_URL}${path}`, fetchOptions);
 
   if (!response.ok) {
-    throw new Error(`API request failed: ${response.status}`);
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `API 요청 실패: ${response.status}`);
   }
 
   return response.json();
 }
 
+// ── 채용 공고 등록 ─────────────────────────────────────
+// POST /api/v1/jobs
+export async function createJob(recruiterId, title, requirement) {
+  if (!API_BASE_URL) {
+    await wait(300);
+    return { job_id: "mock_job_id", message: "채용 공고가 등록되었습니다." };
+  }
+
+  return request("/api/v1/jobs", {
+    method: "POST",
+    body: { recruiter_id: recruiterId, title, requirement },
+  });
+}
+
+// ── 자소서 파싱 및 AI 분석 요청 ───────────────────────────
+// POST /api/v1/resumes/analyze
+export async function analyzeResume(jobId, candidateName, resumeText) {
+  if (!API_BASE_URL) {
+    await wait(500);
+    return { resume_id: "mock_resume_id", status: "PENDING" };
+  }
+
+  return request("/api/v1/resumes/analyze", {
+    method: "POST",
+    body: { job_id: jobId, candidate_name: candidateName, resume_text: resumeText },
+  });
+}
+
+// ── 지원자 전형 상태 변경 ──────────────────────────────────
+// PATCH /api/v1/candidates/{resume_id}/status
+export async function updateCandidateStatus(resumeId, recruitmentStatus) {
+  if (!API_BASE_URL) {
+    await wait(300);
+    return {};
+  }
+
+  return request(`/api/v1/candidates/${resumeId}/status`, {
+    method: "PATCH",
+    body: { recruitment_status: recruitmentStatus },
+  });
+}
+
+// ── 지원자 목록 ───────────────────────────────────────────
+// GET /api/v1/candidates
 export async function fetchCandidates({ jobId = DEFAULT_JOB_ID, hashtag, page = 1 }) {
   if (!API_BASE_URL) {
     await wait(300);
@@ -150,6 +200,8 @@ export async function fetchCandidates({ jobId = DEFAULT_JOB_ID, hashtag, page = 
   };
 }
 
+// ── 지원자 상세 ───────────────────────────────────────────
+// GET /api/v1/candidates/{resume_id}
 export async function fetchCandidateDetail(resumeId, baseCandidate) {
   if (!API_BASE_URL) {
     await wait(500);
