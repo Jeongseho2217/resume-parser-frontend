@@ -29,6 +29,24 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen px-8 py-8">
       <div className="mx-auto max-w-3xl rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+        <div className="mb-6 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => navigate("/signup")}
+            className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200"
+          >
+            회원가입
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate("/login")}
+            className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white"
+          >
+            로그인
+          </button>
+        </div>
+
         <h1 className="text-3xl font-bold text-slate-900">로그인</h1>
         <p className="mt-2 text-sm text-slate-500">
           계정 정보를 입력하고 로그인하세요.
@@ -36,22 +54,24 @@ export default function LoginPage() {
 
         <div className="mt-6 flex gap-3">
           <button
+            type="button"
             onClick={() => setUserType("personal")}
             className={`rounded-xl px-4 py-2 text-sm font-medium ${
               userType === "personal"
                 ? "bg-blue-600 text-white"
-                : "bg-slate-100 text-slate-700"
+                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
             }`}
           >
             개인 회원
           </button>
 
           <button
+            type="button"
             onClick={() => setUserType("company")}
             className={`rounded-xl px-4 py-2 text-sm font-medium ${
               userType === "company"
                 ? "bg-blue-600 text-white"
-                : "bg-slate-100 text-slate-700"
+                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
             }`}
           >
             기업 회원
@@ -93,7 +113,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white"
+            className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white hover:bg-blue-700"
           >
             로그인
           </button>
