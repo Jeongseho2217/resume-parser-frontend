@@ -1,5 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { fetchCandidateDetail, fetchCandidates } from "../lib/api";
+import {
+  fetchCandidateDetail,
+  fetchCandidates,
+  updateCandidateStatus,
+} from "../lib/api";
 import { STATUS_CONFIG } from "../lib/constants";
 import ApplicantCard from "../components/ApplicantCard";
 import ApplicantModal from "../components/ApplicantModal";
@@ -15,6 +19,7 @@ export default function RecruiterDashboardPage() {
   const [selectedApplicantIndex, setSelectedApplicantIndex] = useState(-1);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState("");
+  const [statusUpdating, setStatusUpdating] = useState(false);
   const [pageInfo, setPageInfo] = useState({
     currentPage: 1,
     pageSize: 10,
@@ -109,6 +114,44 @@ export default function RecruiterDashboardPage() {
     setSelectedApplicantIndex(-1);
     setDetailLoading(false);
     setDetailError("");
+    setStatusUpdating(false);
+  }
+
+  async function handleStatusChange(nextStatus) {
+    if (!selectedApplicant || nextStatus === selectedApplicant.status) {
+      return;
+    }
+
+    const previousApplicant = selectedApplicant;
+    const resumeId = selectedApplicant.resumeId || selectedApplicant.id;
+
+    setStatusUpdating(true);
+    setDetailError("");
+    setSelectedApplicant((applicant) => ({ ...applicant, status: nextStatus }));
+    setApplicants((items) =>
+      items.map((applicant) =>
+        String(applicant.resumeId || applicant.id) === String(resumeId)
+          ? { ...applicant, status: nextStatus }
+          : applicant
+      )
+    );
+
+    try {
+      await updateCandidateStatus(resumeId, nextStatus);
+    } catch (error) {
+      console.error(error);
+      setDetailError("전형 상태를 저장하지 못했습니다.");
+      setSelectedApplicant(previousApplicant);
+      setApplicants((items) =>
+        items.map((applicant) =>
+          String(applicant.resumeId || applicant.id) === String(resumeId)
+            ? { ...applicant, status: previousApplicant.status }
+            : applicant
+        )
+      );
+    } finally {
+      setStatusUpdating(false);
+    }
   }
 
   useEffect(() => {
@@ -229,10 +272,12 @@ export default function RecruiterDashboardPage() {
                     onClose={closeApplicantModal}
                     onPrevious={() => openApplicantByIndex(selectedApplicantIndex - 1)}
                     onNext={() => openApplicantByIndex(selectedApplicantIndex + 1)}
+                    onStatusChange={handleStatusChange}
                     canPrevious={selectedApplicantIndex > 0}
                     canNext={selectedApplicantIndex < filteredApplicants.length - 1}
                     loading={detailLoading}
                     error={detailError}
+                    statusUpdating={statusUpdating}
                     statusConfig={STATUS_CONFIG}
                   />
                 )}

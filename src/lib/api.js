@@ -100,7 +100,10 @@ async function request(path, options = {}) {
 export async function createJob(recruiterId, title, requirement) {
   if (!API_BASE_URL) {
     await wait(300);
-    return { job_id: "mock_job_id", message: "채용 공고가 등록되었습니다." };
+    return {
+      job_id: `mock_job_${Date.now()}`,
+      message: "채용 공고가 등록되었습니다.",
+    };
   }
 
   return request("/api/v1/jobs", {
