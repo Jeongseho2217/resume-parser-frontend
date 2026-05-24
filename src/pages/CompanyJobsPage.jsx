@@ -9,6 +9,12 @@ export default function CompanyJobsPage() {
   const [error, setError] = useState("");
 
   function handleRemove(jobId) {
+    const confirmed = window.confirm(
+      "정말 이 공고를 삭제하시겠습니까?\n삭제한 공고는 되돌릴 수 없습니다."
+    );
+
+    if (!confirmed) return;
+
     try {
       setError("");
       removeCompanyJob(jobId);
@@ -32,8 +38,9 @@ export default function CompanyJobsPage() {
           </div>
 
           <button
+            type="button"
             onClick={() => navigate("/jobs/new")}
-            className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white"
+            className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white hover:bg-blue-700"
           >
             새 공고 등록
           </button>
@@ -47,7 +54,9 @@ export default function CompanyJobsPage() {
 
         {jobs.length === 0 ? (
           <div className="mt-6 rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-            <h2 className="text-xl font-bold text-slate-900">등록한 공고가 없습니다.</h2>
+            <h2 className="text-xl font-bold text-slate-900">
+              등록한 공고가 없습니다.
+            </h2>
             <p className="mt-2 text-sm text-slate-500">
               공고를 등록하면 지원자에게 공개되고, 공고별 AI 매칭 기준으로 활용됩니다.
             </p>
@@ -72,22 +81,25 @@ export default function CompanyJobsPage() {
 
                   <div className="flex flex-wrap gap-2">
                     <button
+                      type="button"
                       onClick={() => navigate(`/jobs/${job.id}`)}
-                      className="rounded-xl bg-slate-100 px-4 py-2 text-sm text-slate-700"
+                      className="rounded-xl bg-slate-100 px-4 py-2 text-sm text-slate-700 hover:bg-slate-200"
                     >
                       공고 상세
                     </button>
 
                     <button
+                      type="button"
                       onClick={() => navigate("/dashboard")}
-                      className="rounded-xl bg-slate-900 px-4 py-2 text-sm text-white"
+                      className="rounded-xl bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-800"
                     >
                       지원자 보기
                     </button>
 
                     <button
+                      type="button"
                       onClick={() => handleRemove(job.id)}
-                      className="rounded-xl bg-rose-50 px-4 py-2 text-sm text-rose-600"
+                      className="rounded-xl bg-rose-50 px-4 py-2 text-sm text-rose-600 hover:bg-rose-100"
                     >
                       삭제
                     </button>
@@ -96,14 +108,18 @@ export default function CompanyJobsPage() {
 
                 <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-3">
                   <div className="rounded-xl bg-slate-50 p-4">
-                    <p className="text-sm font-semibold text-slate-900">바라는 인재상</p>
+                    <p className="text-sm font-semibold text-slate-900">
+                      바라는 인재상
+                    </p>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
                       {job.desiredProfile || "입력된 내용 없음"}
                     </p>
                   </div>
 
                   <div className="rounded-xl bg-slate-50 p-4">
-                    <p className="text-sm font-semibold text-slate-900">필수 기술스택</p>
+                    <p className="text-sm font-semibold text-slate-900">
+                      필수 기술스택
+                    </p>
                     <div className="mt-2 flex flex-wrap gap-2">
                       {job.requiredSkills.length > 0 ? (
                         job.requiredSkills.map((skill) => (
@@ -115,13 +131,17 @@ export default function CompanyJobsPage() {
                           </span>
                         ))
                       ) : (
-                        <span className="text-sm text-slate-500">입력된 내용 없음</span>
+                        <span className="text-sm text-slate-500">
+                          입력된 내용 없음
+                        </span>
                       )}
                     </div>
                   </div>
 
                   <div className="rounded-xl bg-slate-50 p-4">
-                    <p className="text-sm font-semibold text-slate-900">핵심 역량</p>
+                    <p className="text-sm font-semibold text-slate-900">
+                      핵심 역량
+                    </p>
                     <div className="mt-2 flex flex-wrap gap-2">
                       {job.coreCompetencies.length > 0 ? (
                         job.coreCompetencies.map((competency) => (
@@ -133,7 +153,9 @@ export default function CompanyJobsPage() {
                           </span>
                         ))
                       ) : (
-                        <span className="text-sm text-slate-500">입력된 내용 없음</span>
+                        <span className="text-sm text-slate-500">
+                          입력된 내용 없음
+                        </span>
                       )}
                     </div>
                   </div>

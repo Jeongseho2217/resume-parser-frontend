@@ -8,6 +8,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen px-6 py-10">
       <Navbar />
+
       <div className="mx-auto max-w-4xl rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-sm">
         <p className="text-sm font-medium text-blue-600">
           Resume Parsing & Hiring Dashboard
@@ -24,35 +25,25 @@ export default function LandingPage() {
 
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
           <button
-            onClick={() => navigate("/jobs")}
-            className="w-full rounded-2xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 sm:w-auto"
-          >
-            개인 회원으로 시작하기
-          </button>
-
-          <button
-            onClick={() => navigate("/company/jobs")}
-            className="w-full rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 sm:w-auto"
-          >
-            기업 회원으로 시작하기
-          </button>
-        </div>
-
-        <div className="mt-4 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-          <button
-            onClick={() => navigate("/signup")}
-            className="w-full rounded-2xl bg-slate-100 px-6 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-200 sm:w-auto"
-          >
-            회원가입 하러 가기
-          </button>
-
-          <button
+            type="button"
             onClick={() => navigate("/login")}
-            className="w-full rounded-2xl bg-slate-100 px-6 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-200 sm:w-auto"
+            className="w-full rounded-2xl bg-blue-600 px-8 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 sm:w-auto"
           >
-            로그인 하러 가기
+            로그인하기
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate("/signup")}
+            className="w-full rounded-2xl bg-slate-900 px-8 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 sm:w-auto"
+          >
+            회원가입하기
           </button>
         </div>
+
+        <p className="mt-4 text-sm text-slate-500">
+          로그인 후 개인 회원과 기업 회원을 선택해 이용할 수 있습니다.
+        </p>
 
         <div className="mt-10 grid grid-cols-1 gap-4 text-left md:grid-cols-3">
           <div className="rounded-2xl bg-slate-50 p-5">
