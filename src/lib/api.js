@@ -1,14 +1,21 @@
-import { MOCK_APPLICANTS } from "../data/applicants";
 import { SKILL_TAGS } from "./constants";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "";
-const DEFAULT_JOB_ID = import.meta.env.VITE_JOB_ID || "job_123";
+function formatDateTime(dateString) { // 날짜 좀 예쁘게 다듬기
+  if (!dateString) return "날짜 정보 없음";
+  
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
 
-function wait(ms) {
-  return new Promise((resolve) => {
-    window.setTimeout(resolve, ms);
-  });
+  return `${year}-${month}-${day} ${hours}:${minutes}`; 
 }
+
+// 환경변수가 없으면 기본적으로 스프링 부트 포트(8080)를 바라보도록 설정.
+const BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "http://localhost:8080";
+const DEFAULT_JOB_ID = import.meta.env.VITE_JOB_ID || "1"; // 기본 공고 ID도 진짜 숫자로 변경
 
 function splitTags(tags = []) {
   return {
@@ -64,7 +71,7 @@ function toDetailItem(baseCandidate, payload) {
     status: "DONE",
     analysisResult: {
       ...baseCandidate,
-      candidateDate: payload.applied_at || "",
+      candidateDate: formatDateTime(payload.applied_at), // 날짜 2000-01-01 00:00 꼴로 나오게
       matchingScore: result.matching_score ?? baseCandidate.matchingScore ?? 0,
       technicalSkills,
       coreCompetencies,
@@ -75,65 +82,76 @@ function toDetailItem(baseCandidate, payload) {
   };
 }
 
+// 공통 통신 함수 (모든 GET, PATCH 요청이 이 함수를 거쳐 안전하게 백엔드로 이동)
 async function request(path, options = {}) {
   const { method = "GET", body } = options;
 
-  const headers = { "Content-Type": "application/json" };
+  const headers = { 
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${localStorage.getItem("accessToken")}` // 모든 요청에 토큰 자동 할당
+  };
 
   const fetchOptions = { method, headers };
   if (body !== undefined) {
     fetchOptions.body = JSON.stringify(body);
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, fetchOptions);
+  const response = await fetch(`${BASE_URL}${path}`, fetchOptions);
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.message || `API 요청 실패: ${response.status}`);
   }
 
-  return response.json();
+  const text = await response.text();
+  return text ? JSON.parse(text) : {};
 }
 
 // ── 채용 공고 등록 ─────────────────────────────────────
-// POST /api/v1/jobs
 export async function createJob(recruiterId, title, requirement) {
-  if (!API_BASE_URL) {
-    await wait(300);
-    return {
-      job_id: `mock_job_${Date.now()}`,
-      message: "채용 공고가 등록되었습니다.",
-    };
-  }
-
-  return request("/api/v1/jobs", {
+  const response = await fetch(`${BASE_URL}/api/v1/jobs`, {
     method: "POST",
-    body: { recruiter_id: recruiterId, title, requirement },
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${localStorage.getItem("accessToken")}`
+    },
+    body: JSON.stringify({ recruiter_id: recruiterId, title, requirement }),
   });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `채용 공고 생성 실패: ${response.status}`);
+  }
+  return response.json();
 }
 
 // ── 자소서 파싱 및 AI 분석 요청 ───────────────────────────
-// POST /api/v1/resumes/analyze
-export async function analyzeResume(jobId, candidateName, resumeText) {
-  if (!API_BASE_URL) {
-    await wait(500);
-    return { resume_id: "mock_resume_id", status: "PENDING" };
-  }
+export async function analyzeResume(jobId, candidateName, email, file) {
+  const formData = new FormData();
+  const cleanJobId = typeof jobId === 'string' ? jobId.replace(/[^0-9]/g, '') : jobId;
 
-  return request("/api/v1/resumes/analyze", {
+  formData.append("job_id", cleanJobId);
+  formData.append("name", candidateName);
+  formData.append("email", email);
+  formData.append("file", file);
+
+  const response = await fetch(`${BASE_URL}/api/v1/resumes/analyze`, {
     method: "POST",
-    body: { job_id: jobId, candidate_name: candidateName, resume_text: resumeText },
+    headers: { 
+      "Authorization": `Bearer ${localStorage.getItem("accessToken")}`
+    },
+    body: formData,
   });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `API 요청 실패: ${response.status}`);
+  }
+  return response.json();
 }
 
 // ── 지원자 전형 상태 변경 ──────────────────────────────────
-// PATCH /api/v1/candidates/{resume_id}/status
 export async function updateCandidateStatus(resumeId, recruitmentStatus) {
-  if (!API_BASE_URL) {
-    await wait(300);
-    return {};
-  }
-
   return request(`/api/v1/candidates/${resumeId}/status`, {
     method: "PATCH",
     body: { recruitment_status: recruitmentStatus },
@@ -141,47 +159,11 @@ export async function updateCandidateStatus(resumeId, recruitmentStatus) {
 }
 
 // ── 지원자 목록 ───────────────────────────────────────────
-// GET /api/v1/candidates
 export async function fetchCandidates({ jobId = DEFAULT_JOB_ID, hashtag, page = 1 }) {
-  if (!API_BASE_URL) {
-    await wait(300);
-
-    const filtered = MOCK_APPLICANTS.filter((candidate) => {
-      if (!hashtag) return true;
-      return candidate.tags.includes(hashtag);
-    }).sort((a, b) => b.matchingScore - a.matchingScore);
-
-    return {
-      pageInfo: {
-        currentPage: page,
-        pageSize: 10,
-        totalPages: Math.max(1, Math.ceil(filtered.length / 10)),
-        totalCount: filtered.length,
-      },
-      candidates: filtered.slice((page - 1) * 10, page * 10).map((candidate) => {
-        const { technicalSkills, coreCompetencies } = splitTags(candidate.tags);
-
-        return {
-          id: String(candidate.id),
-          resumeId: String(candidate.id),
-          name: candidate.name,
-          status: candidate.status,
-          analysisStatus: candidate.analysisStatus || "DONE",
-          matchingScore: candidate.matchingScore,
-          technicalSkills,
-          coreCompetencies,
-          tags: candidate.tags,
-          position: candidate.position,
-          school: candidate.school,
-          experience: candidate.experience,
-          summary: candidate.summary,
-        };
-      }),
-    };
-  }
-
+  const cleanJobId = typeof jobId === 'string' ? jobId.replace(/[^0-9]/g, '') : jobId;
+  
   const searchParams = new URLSearchParams({
-    job_id: jobId,
+    job_id: String(cleanJobId),
     page: String(page),
     page_size: "10",
     sort: "match_score_desc",
@@ -205,38 +187,7 @@ export async function fetchCandidates({ jobId = DEFAULT_JOB_ID, hashtag, page = 
 }
 
 // ── 지원자 상세 ───────────────────────────────────────────
-// GET /api/v1/candidates/{resume_id}
 export async function fetchCandidateDetail(resumeId, baseCandidate) {
-  if (!API_BASE_URL) {
-    await wait(500);
-
-    const candidate = MOCK_APPLICANTS.find((item) => String(item.id) === String(resumeId));
-
-    if (!candidate) {
-      return {
-        status: "FAILED",
-        message: "지원자 상세 정보를 찾을 수 없습니다.",
-        analysisResult: null,
-      };
-    }
-
-    const { technicalSkills, coreCompetencies } = splitTags(candidate.tags);
-
-    return {
-      status: "DONE",
-      analysisResult: {
-        ...baseCandidate,
-        candidateDate: `${candidate.appliedAt}T09:00:00+09:00`,
-        matchingScore: candidate.matchingScore,
-        technicalSkills,
-        coreCompetencies,
-        tags: candidate.tags,
-        summary: candidate.summary,
-        resume: candidate.resume,
-      },
-    };
-  }
-
   const data = await request(`/api/v1/candidates/${resumeId}`);
   return toDetailItem(baseCandidate, data);
 }

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
 import {
   fetchCandidateDetail,
   fetchCandidates,
@@ -10,6 +11,7 @@ import ApplicantModal from "../components/ApplicantModal";
 import Navbar from "../components/Navbar";
 
 export default function RecruiterDashboardPage() {
+  const { jobId } = useParams(); //URL에서 현재 공고 ID 꺼내기
   const [applicants, setApplicants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState("");
@@ -28,8 +30,10 @@ export default function RecruiterDashboardPage() {
   });
 
   useEffect(() => {
-    loadApplicants(1, selectedTag);
-  }, [selectedTag]);
+    if (jobId) {
+      loadApplicants(1, selectedTag);
+    }
+  }, [selectedTag, jobId]); // jobId 추가
 
   async function loadApplicants(page = 1, hashtag = "") {
     try {
@@ -37,6 +41,7 @@ export default function RecruiterDashboardPage() {
       setListError("");
 
       const data = await fetchCandidates({
+        jobId: jobId, // 백엔드에 이 공고번호 지원자들에 신호를 보냄
         page,
         hashtag: hashtag || undefined,
       });

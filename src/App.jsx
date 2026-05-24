@@ -79,16 +79,22 @@ export default function App() {
           </CompanyRoute>
         }
       />
+      
+      <Route path="/dashboard" element={<Navigate to="/company/jobs" replace />} /> {/*대시보드에 공고 아이디를 지정을 안할 경우 공고 페이지로 리다이렉팅*/}
+
+      {/*공고 ID 별 지원자 띄우게 하기 위해 :jobId 추가*/}
+
       <Route
-        path="/dashboard"
+        path="/dashboard/:jobId"
         element={
           <CompanyRoute>
             <RecruiterDashboardPage />
           </CompanyRoute>
         }
       />
+
       <Route
-        path="/apply/:jobId"
+        path="/apply/:jobId" 
         element={
           <PersonalRoute>
             <ApplyPage />

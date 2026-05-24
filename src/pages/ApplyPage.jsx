@@ -1,13 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { analyzeResume } from "../lib/api";
 import { getJobById } from "../lib/jobs";
+import { getCurrentUser } from "../lib/auth"; // 현재 로그인한 유저의 로그인 정보 가져오기
 import LoadingOverlay from "../components/LoadingOverlay";
 
 export default function ApplyPage() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [resumeText, setResumeText] = useState("");
+  const currentUser = getCurrentUser();
+  const [name, setName] = useState(currentUser ? currentUser.name : ""); // 기본값을 회원가입 시 이름으로 지정
+  // const [email, setEmail] = useState("");
   const [resumeFile, setResumeFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -17,14 +18,29 @@ export default function ApplyPage() {
   const job = getJobById(jobId);
 
   async function handleSubmit() {
-    if (!name.trim() || !resumeText.trim()) {
-      setError("이름과 자기소개를 모두 입력하세요.");
+    if (!name.trim() || !resumeFile) { // 이름과 이력서 파일 첨부를 필수로 지정
+      setError("이름을 입력하고 이력서 파일을 첨부해 주세요.");
       return;
     }
+
+    if (!currentUser || !currentUser.email) { // 만약 로그아웃되어 이메일 정보가 없을 경우
+      setError("로그인 정보가 없습니다. 다시 로그인해 주세요.");
+      return;
+    }
+
+    console.log("버튼 클릭됨! 현재 값 ->", { name, resumeFile }); // 💡 로그 위치를 최상단으로 이동
+    
+    if (!name || name.trim() === "") {
+        console.log("이름이 비어있음");
+    }
+    if (!resumeFile) {
+        console.log("파일이 없음");
+    }
+
     try {
       setLoading(true);
       setError("");
-      await analyzeResume(jobId, name, resumeText);
+      await analyzeResume(jobId, name, currentUser.email, resumeFile); // 어디에 보내는지?(jobId), 현재 유저의 이름(name), 현재 유저의 이메일 정보(currentUser.email)와 이력서 파일(resumeFile)
       setSubmitted(true);
     } catch (err) {
       setError(err.message || "지원 중 오류가 발생했습니다. 다시 시도해 주세요.");
@@ -75,7 +91,9 @@ export default function ApplyPage() {
             />
           </div>
 
-          <div>
+             {/*가입 시 이메일이 저장되어 있을텐데 또 입력하는건 사용감이 불편할거 같습니다. 수정 부탁드려요*/}
+
+          {/*<div>
             <label className="mb-2 block text-sm font-medium text-slate-700">
               이메일
             </label>
@@ -86,9 +104,11 @@ export default function ApplyPage() {
               onChange={(e) => setEmail(e.target.value)}
               className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
             />
-          </div>
+          </div>*/}
 
-          <div>
+            {/*자기 소개란 이력서 파일로 통합 필요*/}
+
+          {/*<div>
             <label className="mb-2 block text-sm font-medium text-slate-700">
               자기소개
             </label>
@@ -99,7 +119,7 @@ export default function ApplyPage() {
               onChange={(e) => setResumeText(e.target.value)}
               className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
             />
-          </div>
+          </div>*/}
 
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">
