@@ -3,6 +3,12 @@ import React, { useEffect, useState } from "react";
 export default function ApplicantModal({
   applicant,
   onClose,
+  onPrevious,
+  onNext,
+  canPrevious,
+  canNext,
+  loading,
+  error,
   statusConfig,
 }) {
   const [previewStatus, setPreviewStatus] = useState(applicant.status);
@@ -34,12 +40,45 @@ export default function ApplicantModal({
           <button
             onClick={onClose}
             className="px-2 text-xl leading-none text-slate-400 hover:text-slate-600"
+            aria-label="닫기"
           >
             ✕
           </button>
         </div>
 
         <div className="flex flex-col gap-6 p-6">
+          <div className="flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={onPrevious}
+              disabled={!canPrevious}
+              className="rounded-xl bg-slate-100 px-4 py-2 text-sm text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              &lt; 이전 지원자
+            </button>
+
+            <button
+              type="button"
+              onClick={onNext}
+              disabled={!canNext}
+              className="rounded-xl bg-slate-100 px-4 py-2 text-sm text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              다음 지원자 &gt;
+            </button>
+          </div>
+
+          {loading && (
+            <p className="rounded-2xl bg-blue-50 px-4 py-3 text-sm text-blue-700">
+              상세 자소서 불러오는 중...
+            </p>
+          )}
+
+          {error && (
+            <p className="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-600">
+              {error}
+            </p>
+          )}
+
           <div className="flex items-center gap-3 max-sm:flex-col max-sm:items-start">
             <span className="w-20 text-xs font-semibold uppercase tracking-widest text-slate-500">
               상태

@@ -1,10 +1,11 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { jobs } from "../data/jobs";
 import Navbar from "../components/Navbar";
+import { getAllJobs } from "../lib/jobs";
 
 export default function JobsPage() {
   const navigate = useNavigate();
+  const jobs = getAllJobs();
 
   return (
     <div className="min-h-screen px-8 py-8">

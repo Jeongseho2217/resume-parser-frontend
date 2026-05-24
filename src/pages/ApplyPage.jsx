@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { jobs } from "../data/jobs";
 import { analyzeResume } from "../lib/api";
+import { getJobById } from "../lib/jobs";
+import LoadingOverlay from "../components/LoadingOverlay";
 
 export default function ApplyPage() {
   const [name, setName] = useState("");
@@ -13,7 +14,7 @@ export default function ApplyPage() {
   const [submitted, setSubmitted] = useState(false);
   const navigate = useNavigate();
   const { jobId } = useParams();
-  const job = jobs.find((item) => String(item.id) === String(jobId));
+  const job = getJobById(jobId);
 
   async function handleSubmit() {
     if (!name.trim() || !resumeText.trim()) {
@@ -52,6 +53,8 @@ export default function ApplyPage() {
 
   return (
     <div className="min-h-screen px-8 py-8">
+      {loading && <LoadingOverlay message="AI가 이력서를 분석하고 있습니다..." />}
+
       <div className="mx-auto max-w-3xl rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
         <h1 className="text-3xl font-bold text-slate-900">지원하기</h1>
         <p className="mt-2 text-sm text-slate-500">

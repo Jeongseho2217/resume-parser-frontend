@@ -7,6 +7,7 @@ export const MOCK_APPLICANTS = [
     school: "한국대학교 컴퓨터공학과",
     experience: "3년",
     matchingScore: 94,
+    analysisStatus: "DONE",
     tags: ["#Spring_Boot", "#MySQL", "#문제해결능력", "#REST_API", "#팀워크"],
     summary: [
       "Spring Boot 기반 쇼핑몰 결제 시스템 설계 및 서비스 트래픽 3배 증가 대응 경험 보유.",
@@ -30,6 +31,7 @@ MySQL 성능 개선 프로젝트에서는 슬로우 쿼리 로그를 분석하�
     school: "서울과학기술대학교 소프트웨어학과",
     experience: "2년",
     matchingScore: 91,
+    analysisStatus: "PENDING",
     tags: ["#React", "#Node.js", "#AWS", "#소통능력", "#TypeScript"],
     summary: [
       "React + TypeScript 기반 B2B SaaS 대시보드 프론트엔드 전체 구축 및 배포 경험.",
@@ -53,6 +55,7 @@ MySQL 성능 개선 프로젝트에서는 슬로우 쿼리 로그를 분석하�
     school: "연세대학교 산업공학과",
     experience: "4년",
     matchingScore: 88,
+    analysisStatus: "DONE",
     tags: ["#Python", "#Spark", "#데이터파이프라인", "#문제해결능력", "#Airflow"],
     summary: [
       "Apache Spark + Airflow 기반 일 1억 건 배치 파이프라인 구축 및 운영 경험 4년.",
@@ -76,6 +79,7 @@ MySQL 성능 개선 프로젝트에서는 슬로우 쿼리 로그를 분석하�
     school: "고려대학교 컴퓨터학과",
     experience: "1년",
     matchingScore: 84,
+    analysisStatus: "FAILED",
     tags: ["#Spring_Boot", "#JPA", "#도전정신", "#MySQL", "#성장가능성"],
     summary: [
       "Spring Boot + JPA 기반 사이드 프로젝트 3개 완수, 실사용자 1,200명 서비스 운영 경험.",
@@ -99,6 +103,7 @@ MySQL 성능 개선 프로젝트에서는 슬로우 쿼리 로그를 분석하�
     school: "KAIST 전산학부",
     experience: "5년",
     matchingScore: 96,
+    analysisStatus: "DONE",
     tags: ["#Kubernetes", "#Docker", "#AWS", "#문제해결능력", "#CI/CD", "#팀워크"],
     summary: [
       "Kubernetes 클러스터 100+ 노드 운영 경험, 무중단 배포 자동화 파이프라인 구축.",
@@ -122,6 +127,7 @@ Platform Engineering 관점에서 개발자 경험(DX) 개선에도 관심이 �
     school: "이화여자대학교 컴퓨터공학과",
     experience: "2년",
     matchingScore: 93,
+    analysisStatus: "PENDING",
     tags: ["#React", "#TypeScript", "#성능최적화", "#소통능력", "#접근성"],
     summary: [
       "React 성능 최적화 전문, Lighthouse 점수 32점 → 94점으로 개선한 실적 보유.",
@@ -145,6 +151,7 @@ Platform Engineering 관점에서 개발자 경험(DX) 개선에도 관심이 �
     school: "부산대학교 정보컴퓨터공학부",
     experience: "3년",
     matchingScore: 86,
+    analysisStatus: "DONE",
     tags: ["#Spring_Boot", "#Kafka", "#MSA", "#문제해결능력", "#REST_API"],
     summary: [
       "MSA 전환 프로젝트 주도, 서비스 간 Kafka 이벤트 스트리밍 아키텍처 설계·구현.",
@@ -168,6 +175,7 @@ API 거버넌스 측면에서 팀 내 API 설계 가이드를 문서화하고, O
     school: "성균관대학교 인공지능학과",
     experience: "2년",
     matchingScore: 90,
+    analysisStatus: "DONE",
     tags: ["#Python", "#PyTorch", "#LLM", "#문제해결능력", "#도전정신"],
     summary: [
       "LLM 파인튜닝 및 RAG 시스템 구축 경험, 내부 문서 검색 정확도 71% → 89% 개선.",

@@ -32,3 +32,18 @@ export const ANALYSIS_STATUS_LABEL = {
   DONE: "분석 완료",
   FAILED: "분석 실패",
 };
+
+export const ANALYSIS_STATUS_CONFIG = {
+  PENDING: {
+    bg: "bg-violet-100 text-violet-700",
+    dot: "bg-violet-400",
+  },
+  DONE: {
+    bg: "bg-emerald-100 text-emerald-700",
+    dot: "bg-emerald-400",
+  },
+  FAILED: {
+    bg: "bg-rose-100 text-rose-700",
+    dot: "bg-rose-400",
+  },
+};

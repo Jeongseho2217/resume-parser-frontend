@@ -18,7 +18,7 @@ function splitTags(tags = []) {
 }
 
 function toCardItem(candidate) {
-  const technicalSkills = candidate.technical_skills || [];
+  const technicalSkills = candidate.tech_stacks || candidate.technical_skills || [];
   const coreCompetencies = candidate.core_competencies || [];
 
   return {
@@ -55,7 +55,8 @@ function toDetailItem(baseCandidate, payload) {
   }
 
   const result = payload.analysis_result || {};
-  const technicalSkills = result.technical_skills || baseCandidate.technicalSkills || [];
+  const technicalSkills =
+    result.tech_stacks || result.technical_skills || baseCandidate.technicalSkills || [];
   const coreCompetencies =
     result.core_competencies || baseCandidate.coreCompetencies || [];
 
@@ -162,7 +163,7 @@ export async function fetchCandidates({ jobId = DEFAULT_JOB_ID, hashtag, page = 
           resumeId: String(candidate.id),
           name: candidate.name,
           status: candidate.status,
-          analysisStatus: "DONE",
+          analysisStatus: candidate.analysisStatus || "DONE",
           matchingScore: candidate.matchingScore,
           technicalSkills,
           coreCompetencies,

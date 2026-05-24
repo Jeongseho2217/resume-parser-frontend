@@ -1,10 +1,49 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { signupUser } from "../lib/auth";
 
 export default function SignupPage() {
   const [userType, setUserType] = useState("personal");
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    phone: "",
+    school: "",
+    major: "",
+    company: "",
+    companyPhone: "",
+    companyDescription: "",
+  });
+  const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  function updateField(field, value) {
+    setForm((prevForm) => ({ ...prevForm, [field]: value }));
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault();
+
+    if (!form.name.trim() || !form.email.trim() || !form.password.trim()) {
+      setError("이름, 이메일, 비밀번호를 입력하세요.");
+      return;
+    }
+
+    if (userType === "company" && !form.company.trim()) {
+      setError("회사명을 입력하세요.");
+      return;
+    }
+
+    try {
+      setError("");
+      signupUser({ ...form, userType });
+      navigate(userType === "company" ? "/dashboard" : "/jobs");
+    } catch (err) {
+      setError(err.message || "회원가입에 실패했습니다.");
+    }
+  }
 
   return (
     <div className="min-h-screen px-8 py-8">
@@ -47,7 +86,7 @@ export default function SignupPage() {
           </button>
         </div>
 
-        <div className="mt-6 space-y-4">
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">
               이름
@@ -55,6 +94,8 @@ export default function SignupPage() {
             <input
               type="text"
               placeholder={userType === "company" ? "담당자 이름을 입력하세요" : "이름을 입력하세요"}
+              value={form.name}
+              onChange={(event) => updateField("name", event.target.value)}
               className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
             />
           </div>
@@ -66,6 +107,8 @@ export default function SignupPage() {
             <input
               type="email"
               placeholder="이메일을 입력하세요"
+              value={form.email}
+              onChange={(event) => updateField("email", event.target.value)}
               className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
             />
           </div>
@@ -77,6 +120,8 @@ export default function SignupPage() {
             <input
               type="password"
               placeholder="비밀번호를 입력하세요"
+              value={form.password}
+              onChange={(event) => updateField("password", event.target.value)}
               className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
             />
           </div>
@@ -90,6 +135,8 @@ export default function SignupPage() {
                 <input
                   type="text"
                   placeholder="전화번호를 입력하세요"
+                  value={form.phone}
+                  onChange={(event) => updateField("phone", event.target.value)}
                   className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
                 />
               </div>
@@ -101,6 +148,8 @@ export default function SignupPage() {
                 <input
                   type="text"
                   placeholder="학교명을 입력하세요"
+                  value={form.school}
+                  onChange={(event) => updateField("school", event.target.value)}
                   className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
                 />
               </div>
@@ -112,6 +161,8 @@ export default function SignupPage() {
                 <input
                   type="text"
                   placeholder="전공을 입력하세요"
+                  value={form.major}
+                  onChange={(event) => updateField("major", event.target.value)}
                   className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
                 />
               </div>
@@ -125,6 +176,8 @@ export default function SignupPage() {
                 <input
                   type="text"
                   placeholder="회사명을 입력하세요"
+                  value={form.company}
+                  onChange={(event) => updateField("company", event.target.value)}
                   className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
                 />
               </div>
@@ -136,6 +189,8 @@ export default function SignupPage() {
                 <input
                   type="text"
                   placeholder="회사 전화번호를 입력하세요"
+                  value={form.companyPhone}
+                  onChange={(event) => updateField("companyPhone", event.target.value)}
                   className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
                 />
               </div>
@@ -147,20 +202,29 @@ export default function SignupPage() {
                 <textarea
                   rows="4"
                   placeholder="기업 소개를 입력하세요"
+                  value={form.companyDescription}
+                  onChange={(event) =>
+                    updateField("companyDescription", event.target.value)
+                  }
                   className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
                 />
               </div>
             </>
           )}
 
+          {error && (
+            <p className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-600">
+              {error}
+            </p>
+          )}
+
           <button
-            type="button"
-            onClick={() => navigate(userType === "company" ? "/dashboard" : "/jobs")}
+            type="submit"
             className="w-full rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-blue-700"
           >
             회원가입 완료
           </button>
-        </div>
+        </form>
       </div>
     </div>
   );

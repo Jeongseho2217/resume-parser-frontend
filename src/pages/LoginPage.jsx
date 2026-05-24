@@ -1,9 +1,30 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { loginUser } from "../lib/auth";
 
 export default function LoginPage() {
   const [userType, setUserType] = useState("personal");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  function handleSubmit(event) {
+    event.preventDefault();
+
+    if (!email.trim() || !password.trim()) {
+      setError("이메일과 비밀번호를 입력하세요.");
+      return;
+    }
+
+    try {
+      setError("");
+      loginUser({ email, password, userType });
+      navigate(userType === "company" ? "/dashboard" : "/jobs");
+    } catch (err) {
+      setError(err.message || "로그인에 실패했습니다.");
+    }
+  }
 
   return (
     <div className="min-h-screen px-8 py-8">
@@ -37,7 +58,7 @@ export default function LoginPage() {
           </button>
         </div>
 
-        <div className="mt-6 space-y-4">
+        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">
               이메일
@@ -45,6 +66,8 @@ export default function LoginPage() {
             <input
               type="email"
               placeholder="이메일을 입력하세요"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
               className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
             />
           </div>
@@ -56,17 +79,25 @@ export default function LoginPage() {
             <input
               type="password"
               placeholder="비밀번호를 입력하세요"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
               className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
             />
           </div>
 
+          {error && (
+            <p className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-600">
+              {error}
+            </p>
+          )}
+
           <button
-            onClick={() => navigate(userType === "company" ? "/dashboard" : "/jobs")}
+            type="submit"
             className="rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white"
           >
             로그인
           </button>
-        </div>
+        </form>
       </div>
     </div>
   );

@@ -31,7 +31,7 @@ export default function LandingPage() {
           </button>
 
           <button
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate("/company/jobs")}
             className="w-full rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 sm:w-auto"
           >
             기업 회원으로 시작하기
