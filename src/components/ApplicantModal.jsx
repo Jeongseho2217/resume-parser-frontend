@@ -34,7 +34,9 @@ export default function ApplicantModal({
             </p>
             <p className="text-xs text-slate-400">
               {applicant.position || "지원자 상세 정보"}
-              {applicant.school ? ` · ${applicant.school}` : ""}
+              {applicant.school
+                ? ` · ${applicant.school}${applicant.major ? ` ${applicant.major}` : ""}`
+                : ""}
             </p>
           </div>
           <button
@@ -103,10 +105,21 @@ export default function ApplicantModal({
 
           <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
             {[
+              {
+                label: "학교 / 전공",
+                value: applicant.school
+                  ? `${applicant.school}${applicant.major ? ` ${applicant.major}` : ""}`
+                  : "-",
+              },
               { label: "경력", value: applicant.experience || "-" },
               { label: "지원일", value: applicant.candidateDate || applicant.appliedAt || "-" },
-              { label: "AI 매칭", value: `${applicant.matchingScore ?? "-"}점` },
-              { label: "분석 상태", value: applicant.analysisStatus || "-" },
+              {
+                label: "AI 매칭",
+                value:
+                  applicant.analysisStatus === "DONE"
+                    ? `${applicant.matchingScore ?? "-"}점`
+                    : "결과 대기",
+              },
             ].map(({ label, value }) => (
               <div
                 key={label}
@@ -161,11 +174,33 @@ export default function ApplicantModal({
 
           <section>
             <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-slate-500">
-              자소서 원문
+              지원 동기
             </p>
             <div className="max-h-48 overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50 p-4">
               <p className="whitespace-pre-line text-sm leading-loose text-slate-700">
-                {applicant.resume || "상세 자소서 원문이 없습니다."}
+                {applicant.motivation || "지원 동기 내용이 없습니다."}
+              </p>
+            </div>
+          </section>
+
+          <section>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-slate-500">
+              기술 스택
+            </p>
+            <div className="max-h-48 overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="whitespace-pre-line text-sm leading-loose text-slate-700">
+                {applicant.techStackText || "기술 스택 내용이 없습니다."}
+              </p>
+            </div>
+          </section>
+
+          <section>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-slate-500">
+              프로젝트 경험
+            </p>
+            <div className="max-h-48 overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50 p-4">
+              <p className="whitespace-pre-line text-sm leading-loose text-slate-700">
+                {applicant.projectExperience || "프로젝트 경험 내용이 없습니다."}
               </p>
             </div>
           </section>

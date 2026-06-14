@@ -56,6 +56,7 @@ export default function RecruiterDashboardPage() {
         applicant.name?.toLowerCase().includes(keyword) ||
         applicant.position?.toLowerCase().includes(keyword) ||
         applicant.school?.toLowerCase().includes(keyword) ||
+        applicant.major?.toLowerCase().includes(keyword) ||
         applicant.tags?.some((tag) => tag.toLowerCase().includes(keyword))
       );
     });

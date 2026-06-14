@@ -17,6 +17,14 @@ function splitTags(tags = []) {
   };
 }
 
+function toTechStackText(value) {
+  if (Array.isArray(value)) {
+    return value.join(", ");
+  }
+
+  return value || "";
+}
+
 function toCardItem(candidate) {
   const technicalSkills = candidate.tech_stacks || candidate.technical_skills || [];
   const coreCompetencies = candidate.core_competencies || [];
@@ -33,6 +41,7 @@ function toCardItem(candidate) {
     tags: [...technicalSkills, ...coreCompetencies],
     position: candidate.position || "",
     school: candidate.school || "",
+    major: candidate.major || candidate.department || "",
     experience: candidate.experience || "",
     summary: Array.isArray(candidate.summary) ? candidate.summary : [],
   };
@@ -70,6 +79,18 @@ function toDetailItem(baseCandidate, payload) {
       coreCompetencies,
       tags: [...technicalSkills, ...coreCompetencies],
       summary: result.summary || [],
+      school: result.school || baseCandidate.school || "",
+      major: result.major || result.department || baseCandidate.major || "",
+      motivation: result.motivation || baseCandidate.motivation || result.content || "",
+      techStackText:
+        toTechStackText(result.tech_stack || result.tech_stacks) ||
+        baseCandidate.techStackText ||
+        technicalSkills.join(", "),
+      projectExperience:
+        result.project_experience ||
+        baseCandidate.projectExperience ||
+        result.content ||
+        "",
       resume: result.content || "",
     },
   };
@@ -111,7 +132,16 @@ export async function createJob(recruiterId, title, requirement) {
 
 // ── 자소서 파싱 및 AI 분석 요청 ───────────────────────────
 // POST /api/v1/resumes/analyze
-export async function analyzeResume(jobId, candidateName, resumeText) {
+export async function analyzeResume(
+  jobId,
+  candidateName,
+  school,
+  major,
+  experience,
+  motivation,
+  techStack,
+  projectExperience
+) {
   if (!API_BASE_URL) {
     await wait(500);
     return { resume_id: "mock_resume_id", status: "PENDING" };
@@ -119,7 +149,16 @@ export async function analyzeResume(jobId, candidateName, resumeText) {
 
   return request("/api/v1/resumes/analyze", {
     method: "POST",
-    body: { job_id: jobId, candidate_name: candidateName, resume_text: resumeText },
+    body: {
+      job_id: jobId,
+      candidate_name: candidateName,
+      school,
+      major,
+      experience,
+      motivation,
+      tech_stack: techStack,
+      project_experience: projectExperience,
+    },
   });
 }
 
@@ -170,6 +209,7 @@ export async function fetchCandidates({ jobId = DEFAULT_JOB_ID, hashtag, page = 
           tags: candidate.tags,
           position: candidate.position,
           school: candidate.school,
+          major: candidate.major || "",
           experience: candidate.experience,
           summary: candidate.summary,
         };
@@ -229,6 +269,18 @@ export async function fetchCandidateDetail(resumeId, baseCandidate) {
         coreCompetencies,
         tags: candidate.tags,
         summary: candidate.summary,
+        school: candidate.school,
+        major: candidate.major || "",
+        motivation: candidate.motivation || candidate.summary?.[0] || candidate.resume,
+        techStackText:
+          candidate.techStackText ||
+          technicalSkills.join(", ") ||
+          candidate.summary?.[1] ||
+          "",
+        projectExperience:
+          candidate.projectExperience ||
+          candidate.summary?.slice(1).join("\n") ||
+          candidate.resume,
         resume: candidate.resume,
       },
     };

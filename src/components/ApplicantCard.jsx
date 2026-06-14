@@ -42,7 +42,12 @@ export default function ApplicantCard({
       {applicant.school || applicant.experience ? (
         // 학교나 경력이 있으면 이 줄 보여주기
         <div className="flex gap-3 text-xs text-slate-400">
-          {applicant.school ? <span>{applicant.school}</span> : null}
+          {applicant.school ? (
+            <span>
+              {applicant.school}
+              {applicant.major ? ` ${applicant.major}` : ""}
+            </span>
+          ) : null}
           {applicant.school && applicant.experience ? <span>·</span> : null}
           {applicant.experience ? <span>경력 {applicant.experience}</span> : null}
         </div>

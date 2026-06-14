@@ -4,27 +4,73 @@ import { analyzeResume } from "../lib/api";
 import { getJobById } from "../lib/jobs";
 import LoadingOverlay from "../components/LoadingOverlay";
 
+const MAX_TEXT_LENGTH = 1000;
+
+function countWithoutSpaces(value) {
+  return value.replace(/\s/g, "").length;
+}
+
 export default function ApplyPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [resumeText, setResumeText] = useState("");
-  const [resumeFile, setResumeFile] = useState(null);
+  const [school, setSchool] = useState("");
+  const [major, setMajor] = useState("");
+  const [hasExperience, setHasExperience] = useState("");
+  const [experienceYears, setExperienceYears] = useState("");
+  const [motivation, setMotivation] = useState("");
+  const [techStack, setTechStack] = useState("");
+  const [projectExperience, setProjectExperience] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const navigate = useNavigate();
   const { jobId } = useParams();
   const job = getJobById(jobId);
+  const motivationCount = countWithoutSpaces(motivation);
+  const techStackCount = countWithoutSpaces(techStack);
+  const projectExperienceCount = countWithoutSpaces(projectExperience);
+  const hasTooLongField =
+    motivationCount > MAX_TEXT_LENGTH ||
+    techStackCount > MAX_TEXT_LENGTH ||
+    projectExperienceCount > MAX_TEXT_LENGTH;
 
   async function handleSubmit() {
-    if (!name.trim() || !resumeText.trim()) {
-      setError("이름과 자기소개를 모두 입력하세요.");
+    if (
+      !name.trim() ||
+      !school.trim() ||
+      !major.trim() ||
+      !hasExperience ||
+      !motivation.trim() ||
+      !techStack.trim() ||
+      !projectExperience.trim()
+    ) {
+      setError("이름, 학교, 전공, 경력 여부와 3개 항목을 모두 입력하세요.");
       return;
     }
+
+    if (hasExperience === "유" && !experienceYears.trim()) {
+      setError("경력 연차를 입력하세요.");
+      return;
+    }
+
+    if (hasTooLongField) {
+      setError("각 항목은 공백 제외 1000자 이하로 입력하세요.");
+      return;
+    }
+
     try {
       setLoading(true);
       setError("");
-      await analyzeResume(jobId, name, resumeText);
+      await analyzeResume(
+        jobId,
+        name,
+        school,
+        major,
+        hasExperience === "유" ? experienceYears : "0",
+        motivation,
+        techStack,
+        projectExperience
+      );
       setSubmitted(true);
     } catch (err) {
       setError(err.message || "지원 중 오류가 발생했습니다. 다시 시도해 주세요.");
@@ -56,60 +102,178 @@ export default function ApplyPage() {
       {loading && <LoadingOverlay message="AI가 이력서를 분석하고 있습니다..." />}
 
       <div className="mx-auto max-w-3xl rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-        <h1 className="text-3xl font-bold text-slate-900">지원하기</h1>
-        <p className="mt-2 text-sm text-slate-500">
-          {job ? `${job.company} · ${job.title}` : "아래 정보를 입력하고 이력서를 제출하세요."}
-        </p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">지원하기</h1>
+            <p className="mt-2 text-sm text-slate-500">
+              {job ? `${job.company} · ${job.title}` : "아래 정보를 입력하고 이력서를 제출하세요."}
+            </p>
+          </div>
+          <p className="pt-1 text-xs text-slate-400">* 필수 입력 값</p>
+        </div>
 
         <div className="mt-6 space-y-4">
-          <div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                이름 *
+              </label>
+              <input
+                type="text"
+                placeholder="이름을 입력하세요"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                이메일 *
+              </label>
+              <input
+                type="email"
+                placeholder="이메일을 입력하세요"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                학교 *
+              </label>
+              <input
+                type="text"
+                placeholder="학교명을 입력하세요"
+                value={school}
+                onChange={(e) => setSchool(e.target.value)}
+                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                전공 *
+              </label>
+              <input
+                type="text"
+                placeholder="전공을 입력하세요"
+                value={major}
+                onChange={(e) => setMajor(e.target.value)}
+                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
+              />
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
             <label className="mb-2 block text-sm font-medium text-slate-700">
-              이름
+              경력 사항 *
             </label>
-            <input
-              type="text"
-              placeholder="이름을 입력하세요"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
-            />
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="inline-flex rounded-xl border border-slate-300 bg-white p-1">
+                {["무", "유"].map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => {
+                      setHasExperience(value);
+                      if (value === "무") {
+                        setExperienceYears("");
+                      }
+                    }}
+                    className={`rounded-lg px-4 py-2 text-sm transition-colors ${
+                      hasExperience === value
+                        ? "bg-blue-600 text-white"
+                        : "text-slate-600"
+                    }`}
+                  >
+                    {value}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="연차"
+                  value={experienceYears}
+                  onChange={(e) =>
+                    setExperienceYears(e.target.value.replace(/[^0-9]/g, ""))
+                  }
+                  disabled={hasExperience !== "유"}
+                  className="w-24 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                />
+                <span className="text-sm text-slate-500">년</span>
+              </div>
+            </div>
+            <p className="mt-2 text-xs text-slate-400">
+              신입이면 `무`, 경력이 있으면 `유`를 선택하고 연차만 입력
+            </p>
           </div>
 
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">
-              이메일
-            </label>
-            <input
-              type="email"
-              placeholder="이메일을 입력하세요"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">
-              자기소개
+              지원 동기 *
             </label>
             <textarea
-              placeholder="간단한 자기소개를 입력하세요"
-              rows="6"
-              value={resumeText}
-              onChange={(e) => setResumeText(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
+              placeholder="지원 동기를 입력하세요"
+              rows="5"
+              value={motivation}
+              onChange={(e) => setMotivation(e.target.value)}
+              className="w-full resize-none rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
             />
+            <div className="mt-2 text-right text-xs text-slate-400">
+              <span className={motivationCount > MAX_TEXT_LENGTH ? "font-semibold text-rose-500" : ""}>
+                공백 제외 {motivationCount}/{MAX_TEXT_LENGTH}자
+              </span>
+            </div>
           </div>
 
           <div>
             <label className="mb-2 block text-sm font-medium text-slate-700">
-              이력서 파일
+              기술 스택 *
             </label>
-            <input
-              type="file"
-              onChange={(e) => setResumeFile(e.target.files[0])}
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 text-sm outline-none file:mr-4 file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:text-blue-700"
+            <textarea
+              placeholder="사용 가능한 기술 스택을 입력하세요"
+              rows="4"
+              value={techStack}
+              onChange={(e) => setTechStack(e.target.value)}
+              className="w-full resize-none rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
             />
+            <div className="mt-2 text-right text-xs text-slate-400">
+              <span className={techStackCount > MAX_TEXT_LENGTH ? "font-semibold text-rose-500" : ""}>
+                공백 제외 {techStackCount}/{MAX_TEXT_LENGTH}자
+              </span>
+            </div>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              프로젝트 경험 *
+            </label>
+            <textarea
+              placeholder="관련 프로젝트 경험을 입력하세요"
+              rows="6"
+              value={projectExperience}
+              onChange={(e) => setProjectExperience(e.target.value)}
+              className="w-full resize-none rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
+            />
+            <div className="mt-2 text-right text-xs text-slate-400">
+              <span
+                className={
+                  projectExperienceCount > MAX_TEXT_LENGTH
+                    ? "font-semibold text-rose-500"
+                    : ""
+                }
+              >
+                공백 제외 {projectExperienceCount}/{MAX_TEXT_LENGTH}자
+              </span>
+            </div>
           </div>
 
           {error && (
