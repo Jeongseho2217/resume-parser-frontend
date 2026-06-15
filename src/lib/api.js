@@ -1,14 +1,21 @@
-import { MOCK_APPLICANTS } from "../data/applicants";
 import { SKILL_TAGS } from "./constants";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "";
-const DEFAULT_JOB_ID = import.meta.env.VITE_JOB_ID || "job_123";
+function formatDateTime(dateString) {
+  if (!dateString) return "날짜 정보 없음";
 
-function wait(ms) {
-  return new Promise((resolve) => {
-    window.setTimeout(resolve, ms);
-  });
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
 }
+
+const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") || "http://localhost:8080";
+const DEFAULT_JOB_ID = import.meta.env.VITE_JOB_ID || "1";
 
 function splitTags(tags = []) {
   return {
@@ -73,7 +80,7 @@ function toDetailItem(baseCandidate, payload) {
     status: "DONE",
     analysisResult: {
       ...baseCandidate,
-      candidateDate: payload.applied_at || "",
+      candidateDate: formatDateTime(payload.applied_at),
       matchingScore: result.matching_score ?? baseCandidate.matchingScore ?? 0,
       technicalSkills,
       coreCompetencies,
@@ -81,6 +88,7 @@ function toDetailItem(baseCandidate, payload) {
       summary: result.summary || [],
       school: result.school || baseCandidate.school || "",
       major: result.major || result.department || baseCandidate.major || "",
+      experience: result.experience || baseCandidate.experience || "",
       motivation: result.motivation || baseCandidate.motivation || result.content || "",
       techStackText:
         toTechStackText(result.tech_stack || result.tech_stacks) ||
@@ -99,39 +107,46 @@ function toDetailItem(baseCandidate, payload) {
 async function request(path, options = {}) {
   const { method = "GET", body } = options;
 
-  const headers = { "Content-Type": "application/json" };
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+  };
 
   const fetchOptions = { method, headers };
+
   if (body !== undefined) {
     fetchOptions.body = JSON.stringify(body);
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, fetchOptions);
+  const response = await fetch(`${BASE_URL}${path}`, fetchOptions);
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw new Error(errorData.message || `API 요청 실패: ${response.status}`);
   }
 
+  const text = await response.text();
+  return text ? JSON.parse(text) : {};
+}
+
+export async function createJob(recruiterId, title, requirement) {
+  const response = await fetch(`${BASE_URL}/api/v1/jobs`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+    },
+    body: JSON.stringify({ recruiter_id: recruiterId, title, requirement }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `채용 공고 생성 실패: ${response.status}`);
+  }
+
   return response.json();
 }
 
-// ── 채용 공고 등록 ─────────────────────────────────────
-// POST /api/v1/jobs
-export async function createJob(recruiterId, title, requirement) {
-  if (!API_BASE_URL) {
-    await wait(300);
-    return { job_id: "mock_job_id", message: "채용 공고가 등록되었습니다." };
-  }
-
-  return request("/api/v1/jobs", {
-    method: "POST",
-    body: { recruiter_id: recruiterId, title, requirement },
-  });
-}
-
-// ── 자소서 파싱 및 AI 분석 요청 ───────────────────────────
-// POST /api/v1/resumes/analyze
 export async function analyzeResume(
   jobId,
   candidateName,
@@ -142,15 +157,12 @@ export async function analyzeResume(
   techStack,
   projectExperience
 ) {
-  if (!API_BASE_URL) {
-    await wait(500);
-    return { resume_id: "mock_resume_id", status: "PENDING" };
-  }
+  const cleanJobId = typeof jobId === "string" ? jobId.replace(/[^0-9]/g, "") : jobId;
 
   return request("/api/v1/resumes/analyze", {
     method: "POST",
     body: {
-      job_id: jobId,
+      job_id: String(cleanJobId),
       candidate_name: candidateName,
       school,
       major,
@@ -162,63 +174,18 @@ export async function analyzeResume(
   });
 }
 
-// ── 지원자 전형 상태 변경 ──────────────────────────────────
-// PATCH /api/v1/candidates/{resume_id}/status
 export async function updateCandidateStatus(resumeId, recruitmentStatus) {
-  if (!API_BASE_URL) {
-    await wait(300);
-    return {};
-  }
-
   return request(`/api/v1/candidates/${resumeId}/status`, {
     method: "PATCH",
     body: { recruitment_status: recruitmentStatus },
   });
 }
 
-// ── 지원자 목록 ───────────────────────────────────────────
-// GET /api/v1/candidates
 export async function fetchCandidates({ jobId = DEFAULT_JOB_ID, hashtag, page = 1 }) {
-  if (!API_BASE_URL) {
-    await wait(300);
-
-    const filtered = MOCK_APPLICANTS.filter((candidate) => {
-      if (!hashtag) return true;
-      return candidate.tags.includes(hashtag);
-    }).sort((a, b) => b.matchingScore - a.matchingScore);
-
-    return {
-      pageInfo: {
-        currentPage: page,
-        pageSize: 10,
-        totalPages: Math.max(1, Math.ceil(filtered.length / 10)),
-        totalCount: filtered.length,
-      },
-      candidates: filtered.slice((page - 1) * 10, page * 10).map((candidate) => {
-        const { technicalSkills, coreCompetencies } = splitTags(candidate.tags);
-
-        return {
-          id: String(candidate.id),
-          resumeId: String(candidate.id),
-          name: candidate.name,
-          status: candidate.status,
-          analysisStatus: candidate.analysisStatus || "DONE",
-          matchingScore: candidate.matchingScore,
-          technicalSkills,
-          coreCompetencies,
-          tags: candidate.tags,
-          position: candidate.position,
-          school: candidate.school,
-          major: candidate.major || "",
-          experience: candidate.experience,
-          summary: candidate.summary,
-        };
-      }),
-    };
-  }
+  const cleanJobId = typeof jobId === "string" ? jobId.replace(/[^0-9]/g, "") : jobId;
 
   const searchParams = new URLSearchParams({
-    job_id: jobId,
+    job_id: String(cleanJobId),
     page: String(page),
     page_size: "10",
     sort: "match_score_desc",
@@ -241,51 +208,7 @@ export async function fetchCandidates({ jobId = DEFAULT_JOB_ID, hashtag, page = 
   };
 }
 
-// ── 지원자 상세 ───────────────────────────────────────────
-// GET /api/v1/candidates/{resume_id}
 export async function fetchCandidateDetail(resumeId, baseCandidate) {
-  if (!API_BASE_URL) {
-    await wait(500);
-
-    const candidate = MOCK_APPLICANTS.find((item) => String(item.id) === String(resumeId));
-
-    if (!candidate) {
-      return {
-        status: "FAILED",
-        message: "지원자 상세 정보를 찾을 수 없습니다.",
-        analysisResult: null,
-      };
-    }
-
-    const { technicalSkills, coreCompetencies } = splitTags(candidate.tags);
-
-    return {
-      status: "DONE",
-      analysisResult: {
-        ...baseCandidate,
-        candidateDate: `${candidate.appliedAt}T09:00:00+09:00`,
-        matchingScore: candidate.matchingScore,
-        technicalSkills,
-        coreCompetencies,
-        tags: candidate.tags,
-        summary: candidate.summary,
-        school: candidate.school,
-        major: candidate.major || "",
-        motivation: candidate.motivation || candidate.summary?.[0] || candidate.resume,
-        techStackText:
-          candidate.techStackText ||
-          technicalSkills.join(", ") ||
-          candidate.summary?.[1] ||
-          "",
-        projectExperience:
-          candidate.projectExperience ||
-          candidate.summary?.slice(1).join("\n") ||
-          candidate.resume,
-        resume: candidate.resume,
-      },
-    };
-  }
-
   const data = await request(`/api/v1/candidates/${resumeId}`);
   return toDetailItem(baseCandidate, data);
 }

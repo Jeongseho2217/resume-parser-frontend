@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { analyzeResume } from "../lib/api";
 import { getJobById } from "../lib/jobs";
+import { getCurrentUser } from "../lib/auth";
 import LoadingOverlay from "../components/LoadingOverlay";
 
 const MAX_TEXT_LENGTH = 1000;
@@ -11,8 +12,8 @@ function countWithoutSpaces(value) {
 }
 
 export default function ApplyPage() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const currentUser = getCurrentUser();
+  const [name, setName] = useState(currentUser?.name || "");
   const [school, setSchool] = useState("");
   const [major, setMajor] = useState("");
   const [hasExperience, setHasExperience] = useState("");
@@ -26,6 +27,7 @@ export default function ApplyPage() {
   const navigate = useNavigate();
   const { jobId } = useParams();
   const job = getJobById(jobId);
+
   const motivationCount = countWithoutSpaces(motivation);
   const techStackCount = countWithoutSpaces(techStack);
   const projectExperienceCount = countWithoutSpaces(projectExperience);
@@ -113,32 +115,17 @@ export default function ApplyPage() {
         </div>
 
         <div className="mt-6 space-y-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">
-                이름 *
-              </label>
-              <input
-                type="text"
-                placeholder="이름을 입력하세요"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">
-                이메일 *
-              </label>
-              <input
-                type="email"
-                placeholder="이메일을 입력하세요"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
-              />
-            </div>
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              이름 *
+            </label>
+            <input
+              type="text"
+              placeholder="이름을 입력하세요"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
+            />
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

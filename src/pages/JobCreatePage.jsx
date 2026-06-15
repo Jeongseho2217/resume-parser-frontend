@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { createJob } from "../lib/api";
+import { getCurrentUser } from "../lib/auth";
 import { addCompanyJob } from "../lib/jobs";
 
 function splitCommaValues(value) {
@@ -8,6 +10,34 @@ function splitCommaValues(value) {
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function buildRequirementText({
+  company,
+  deadline,
+  tasks,
+  requirement,
+  preferred,
+  desiredProfile,
+  requiredSkills,
+  preferredSkills,
+  coreCompetencies,
+}) {
+  return [
+    company ? `회사명: ${company}` : "",
+    deadline ? `마감일: ${deadline}` : "",
+    tasks.length > 0 ? `주요 업무:\n${tasks.map((item) => `- ${item}`).join("\n")}` : "",
+    requirement.length > 0
+      ? `자격 요건:\n${requirement.map((item) => `- ${item}`).join("\n")}`
+      : "",
+    preferred ? `우대 사항:\n${preferred}` : "",
+    desiredProfile ? `바라는 인재상:\n${desiredProfile}` : "",
+    requiredSkills.length > 0 ? `필수 기술스택: ${requiredSkills.join(", ")}` : "",
+    preferredSkills.length > 0 ? `우대 기술스택: ${preferredSkills.join(", ")}` : "",
+    coreCompetencies.length > 0 ? `핵심 역량: ${coreCompetencies.join(", ")}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n\n");
 }
 
 export default function JobCreatePage() {
@@ -44,19 +74,39 @@ export default function JobCreatePage() {
       const requiredSkillList = splitCommaValues(requiredSkills);
       const preferredSkillList = splitCommaValues(preferredSkills);
       const competencyList = splitCommaValues(coreCompetencies);
+      const taskList = tasks
+        .split("\n")
+        .map((item) => item.trim())
+        .filter(Boolean);
+      const requirementList = requirement
+        .split("\n")
+        .map((item) => item.trim())
+        .filter(Boolean);
+      const requirementText = buildRequirementText({
+        company: company.trim(),
+        deadline,
+        tasks: taskList,
+        requirement: requirementList,
+        preferred: preferred.trim(),
+        desiredProfile: desiredProfile.trim(),
+        requiredSkills: requiredSkillList,
+        preferredSkills: preferredSkillList,
+        coreCompetencies: competencyList,
+      });
+      const currentUser = getCurrentUser();
+      const createdJob = await createJob(
+        currentUser?.id || "user_123",
+        title.trim(),
+        requirementText
+      );
 
       addCompanyJob({
+        id: createdJob.job_id,
         title: title.trim(),
         company: company.trim(),
         deadline,
-        tasks: tasks
-          .split("\n")
-          .map((item) => item.trim())
-          .filter(Boolean),
-        requirements: requirement
-          .split("\n")
-          .map((item) => item.trim())
-          .filter(Boolean),
+        tasks: taskList,
+        requirements: requirementList,
         preferred: preferred.trim(),
         desiredProfile: desiredProfile.trim(),
         requiredSkills: requiredSkillList,

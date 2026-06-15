@@ -17,9 +17,8 @@ export default function JobsPage() {
         </p>
 
         <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2">
-          {jobs.map((job) => (
-            <article
-              key={job.id}
+            {jobs.map((job, index) => (
+              <article key={`${job.id}-${index}`}
               className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
             >
               <p className="text-sm text-slate-500">{job.company}</p>

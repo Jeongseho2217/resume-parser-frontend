@@ -90,7 +90,7 @@ export default function CompanyJobsPage() {
 
                     <button
                       type="button"
-                      onClick={() => navigate("/dashboard")}
+                      onClick={() => navigate(`/dashboard/${job.id}`)}
                       className="rounded-xl bg-slate-900 px-4 py-2 text-sm text-white hover:bg-slate-800"
                     >
                       지원자 보기

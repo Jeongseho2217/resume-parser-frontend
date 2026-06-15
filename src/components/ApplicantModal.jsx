@@ -5,10 +5,12 @@ export default function ApplicantModal({
   onClose,
   onPrevious,
   onNext,
+  onStatusChange,
   canPrevious,
   canNext,
   loading,
   error,
+  statusUpdating,
   statusConfig,
 }) {
   const [previewStatus, setPreviewStatus] = useState(applicant.status);
@@ -90,7 +92,11 @@ export default function ApplicantModal({
                 <button
                   key={status}
                   type="button"
-                  onClick={() => setPreviewStatus(status)}
+                  onClick={() => {
+                    setPreviewStatus(status);
+                    onStatusChange(status);
+                  }}
+                  disabled={statusUpdating}
                   className={`rounded-full border px-3 py-1.5 text-xs transition-all ${
                     previewStatus === status
                       ? "border-blue-700 bg-blue-700 text-white"
@@ -102,6 +108,12 @@ export default function ApplicantModal({
               ))}
             </div>
           </div>
+
+          {statusUpdating && (
+            <p className="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-500">
+              전형 상태 저장 중...
+            </p>
+          )}
 
           <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1">
             {[

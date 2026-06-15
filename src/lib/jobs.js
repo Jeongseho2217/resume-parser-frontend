@@ -60,7 +60,7 @@ export function addCompanyJob(job) {
   const localJobs = readLocalJobs();
   const newJob = normalizeJob({
     ...job,
-    id: `local_${Date.now()}`,
+    id: job.id || `local_${Date.now()}`,
     ownerId: currentUser.id,
     ownerEmail: currentUser.email,
     createdAt: new Date().toISOString(),
