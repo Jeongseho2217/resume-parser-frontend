@@ -115,29 +115,16 @@ export default function ApplyPage() {
         </div>
 
         <div className="mt-6 space-y-4">
-          <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">
-              이름 *
-            </label>
-            <input
-              type="text"
-              placeholder="이름을 입력하세요"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
-            />
-          </div>
-
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-2 block text-sm font-medium text-slate-700">
-                학교 *
+                이름 *
               </label>
               <input
                 type="text"
-                placeholder="학교명을 입력하세요"
-                value={school}
-                onChange={(e) => setSchool(e.target.value)}
+                placeholder="이름을 입력하세요"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
               />
             </div>
@@ -156,34 +143,47 @@ export default function ApplyPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-            <label className="mb-2 block text-sm font-medium text-slate-700">
-              경력 사항 *
-            </label>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="inline-flex rounded-xl border border-slate-300 bg-white p-1">
-                {["무", "유"].map((value) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => {
-                      setHasExperience(value);
-                      if (value === "무") {
-                        setExperienceYears("");
-                      }
-                    }}
-                    className={`rounded-lg px-4 py-2 text-sm transition-colors ${
-                      hasExperience === value
-                        ? "bg-blue-600 text-white"
-                        : "text-slate-600"
-                    }`}
-                  >
-                    {value}
-                  </button>
-                ))}
-              </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                학교 *
+              </label>
+              <input
+                type="text"
+                placeholder="학교명을 입력하세요"
+                value={school}
+                onChange={(e) => setSchool(e.target.value)}
+                className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-blue-500"
+              />
+            </div>
 
-              <div className="flex items-center gap-2">
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                경력 사항 *
+              </label>
+              <div className="flex items-center gap-3 rounded-xl border border-slate-300 bg-white px-3 py-2">
+                <div className="inline-flex rounded-lg bg-slate-100 p-1">
+                  {["무", "유"].map((value) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => {
+                        setHasExperience(value);
+                        if (value === "무") {
+                          setExperienceYears("");
+                        }
+                      }}
+                      className={`rounded-md px-3 py-1.5 text-sm transition-colors ${
+                        hasExperience === value
+                          ? "bg-blue-600 text-white"
+                          : "text-slate-600"
+                      }`}
+                    >
+                      {value}
+                    </button>
+                  ))}
+                </div>
+
                 <input
                   type="text"
                   inputMode="numeric"
@@ -193,14 +193,11 @@ export default function ApplyPage() {
                     setExperienceYears(e.target.value.replace(/[^0-9]/g, ""))
                   }
                   disabled={hasExperience !== "유"}
-                  className="w-24 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                  className="w-20 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
                 />
                 <span className="text-sm text-slate-500">년</span>
               </div>
             </div>
-            <p className="mt-2 text-xs text-slate-400">
-              신입이면 `무`, 경력이 있으면 `유`를 선택하고 연차만 입력
-            </p>
           </div>
 
           <div>
